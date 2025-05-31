@@ -2,6 +2,7 @@ from pathlib import Path
 import tkinter as tk
 from tkinter import filedialog
 import os
+import sys
 import shutil
 
 
@@ -48,22 +49,25 @@ def main():
                                                                     {bnk}-By BLz{rst}
 {grn}---------------------------------------------------------------------------------------------{rst}
 
-{prp}1. S O R T   F I L E S   B Y   T Y P E{rst}
+{prp}1. S O R T   F I L E S   B Y   T Y P E
+0. E X I T{rst}
 
           """)
     
     try:
-        user_input = int(input(f"{grn}{bnk}[ Select an option ] > {rst}"))
+        user_input = int(input(f"{grn}[ Select an option ] > {rst}"))
     except:
-        input("\n\n[ *breaks monitor ]\n\n[ Enter a valid number ... ]")
+        input(f"\n\n{red}[ *breaks monitor ]\n\n[ Enter a valid number ... ]{rst}")
         clear_console()
         main()
 
     match user_input:
         case 1:
             sort_by_type()
+        case 0:
+            sys.exit()
         case _:
-            input("\n\n[ Enter a number that represents an option ... ]")
+            input(f"\n\n{red}[ Enter a number that represents an option ... ]{rst}")
             clear_console()
             main()
 
@@ -81,13 +85,13 @@ def sort_by_type():
 -----------------------------------------------------------------------{rst}
 
 """)
-    input(f"{cyn}[ Press ENTER to select a folder & sort files inside ... ]{rst}")
+    input(f"{ylw}{cyn}[ Press {ylw}ENTER{cyn} to select a folder & sort files inside ... ]{rst}")
 
     folder = filedialog.askdirectory()
     print(f"{grn}[ Selected folder: {folder} ]{rst}")
 
     if not folder:
-        input(f"{red}[ No folder was selected ]{rst}\n\n\n[ Press ENTER to return ... ]")
+        input(f"{red}[ No folder was selected ]{rst}\n\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to return ... ]{rst}")
         clear_console()
         main()
 
@@ -96,7 +100,7 @@ def sort_by_type():
 
     folder_creation()
 
-    print(f"{cyn}[ Sorting... ]{rst}\n")
+    print(f"{ylw}{cyn}[ Sorting... ]{rst}\n")
     for files in target_path.iterdir():
         if files.is_file():
             sorting(files, target_path)
@@ -104,19 +108,19 @@ def sort_by_type():
         else:
             continue
     
-    input(f"{grn}\n--------------------------------\n[ Task completed successfully! ]\n--------------------------------{rst}\n\nPress any key to continue ...")
+    input(f"{grn}\n--------------------------------\n[ Task completed successfully! ]\n--------------------------------{rst}\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to continue ... ]{rst}")
 
     main()
 
 def folder_creation():
 
-    print(f"\n\n{cyn}[ Required sorting folders will be created in the selected directory ]{rst}")
+    print(f"\n\n{ylw}{cyn}[ Required sorting folders will be created in the selected directory ]{rst}")
 
     for folder_ in folder_to_create:
 
         (target_path / folder_).mkdir(parents=True, exist_ok=True)
  
-    input(f"{grn}[ Missing folders have been created ]\n\n\n{rst}[ Press ENTER to start sorting ... ]")
+    input(f"{grn}[ Missing folders have been created ]\n\n\n{rst}{ylw}{cyn}[ Press {ylw}ENTER{cyn} to start sorting ... ]{rst}")
     clear_console()
 
 def sorting(file_path, target_path):
