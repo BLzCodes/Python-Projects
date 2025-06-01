@@ -4,6 +4,14 @@ from tkinter import filedialog
 import os
 import sys
 import shutil
+import zipfile
+try:
+    from tqdm import tqdm
+except ImportError:
+    print("[ tqdm not found. Installing it now ... ]")
+    import subprocess
+    subprocess.check_call(["python", "-m", "pip", "install", "tqdm"])
+    from tqdm import tqdm
 
 
 
@@ -55,7 +63,8 @@ def main():
 {grn}---------------------------------------------------------------------------------------------{rst}
 
 {prp}1. S O R T   F I L E S   B Y   T Y P E
-2. B U L K   N A M E   C H A N G E R
+2. B U L K   R E N A M I N G
+3. B U L K   E X T R A C T I N G
 
 0. E X I T{rst}
 
@@ -70,9 +79,11 @@ def main():
 
     match user_input:
         case 1:
-            sorting_opt_one()
+            sorting_tool()
         case 2:
-            renaming_opt_two()
+            bulk_renaming_tool()
+        case 3:
+            extract_tool()
         case 0:
             sys.exit()
         case _:
@@ -87,7 +98,7 @@ def main():
 
 # 1. Sorter
 #----------------------------------------------------------------------------------------------------------------
-def sorting_opt_one():
+def sorting_tool():
     global counter
     counter = 0
     clear_console()
@@ -118,12 +129,12 @@ def sorting_opt_one():
     for file in target_path.iterdir():
         if file.is_file():
             sorting_core(file, target_path)
-            print(f"[ Sorted: {file} ]")
+            print(f"[ Sorted: {prp}{file}{rst} ]")
             counter += 1       
         else:
             continue
 
-    print(f"\n\n{grn}[ Sorted {counter} files ]{rst}")
+    print(f"\n\n{grn}[ Sorted {counter} file(s) ]{rst}")
     input(f"{grn}\n--------------------------------\n[ Task completed successfully! ]\n--------------------------------{rst}\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to return ... ]{rst}")
 
     main()
@@ -136,7 +147,7 @@ def folder_creation():
         path = target_path / folder_
         if not (path.exists() and path.is_dir()):
             (path).mkdir(parents=True, exist_ok=True)
-            print(f"[ Created folder {folder_} ]")
+            print(f"[ Created folder for {prp}{folder_}{rst} ]")
         else:
             continue
  
@@ -171,15 +182,15 @@ def sorting_core(file_path, target_path):
 
 # 2. Bulk name changer
 #----------------------------------------------------------------------------------------------------------------
-def renaming_opt_two():
+def bulk_renaming_tool():
     index = 1
     counter = 0
     clear_console()
 
-    print(f"""{prp}---------------------------------------------------------\n
-[ This tool can be used to rename all files in a folder ]
+    print(f"""{prp}-------------------------------------------\n
+[ This tool renames all files in a folder ]
 
----------------------------------------------------------{rst}
+-------------------------------------------{rst}
 
 """)
     input(f"{ylw}{cyn}[ Press {ylw}ENTER{cyn} to select a folder & rename files inside ... ]{rst}")
@@ -205,7 +216,7 @@ def renaming_opt_two():
             if file.is_file():
                 old_path = Path(file)
                 new_path = old_path.with_name(new_name + "_" + str(index) + old_path.suffix)
-                print(f"[ Renamed: {file} ]")
+                print(f"[ Renamed: {prp}{file}{rst} ]")
                 index += 1
                 old_path.rename(new_path)
                 counter += 1
@@ -215,13 +226,62 @@ def renaming_opt_two():
             input(f"{red}[ Invalid characters found in provided name. Please try again ]{rst}\n\n{ylw}{cyn}[ Press {ylw}ENTER{ylw}{cyn} to return ... ]{rst}")
             main()
 
-    print(f"\n\n{grn}[ Renamed {counter} files ]{rst}")
+    print(f"\n\n{grn}[ Renamed {counter} file(s) ]{rst}")
     input(f"{grn}\n--------------------------------\n[ Task completed successfully! ]\n--------------------------------{rst}\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to return ... ]{rst}")
 
     main()
 #----------------------------------------------------------------------------------------------------------------
 
 
+
+
+
+# 3. Add to archive & Extract
+#----------------------------------------------------------------------------------------------------------------
+def extract_tool():
+    clear_console()
+
+    print(f"""{prp}-----------------------------------------------\n
+[ This tool extracts mutiple archives at once ]
+
+-----------------------------------------------{rst}
+
+""")
+    input(f"{ylw}{cyn}[ Press {ylw}ENTER{cyn} to select archive(s) to extract ... ]{rst}")
+    files = filedialog.askopenfilenames(filetypes=[("Archives", "*.zip *.tar *.tgz *.tar.gz *.bz2 *.tar.bz2 *.gz *.xz")])
+    print(f"{grn}[ Selected file(s) to extract: ]{rst}")
+    for file in files:
+        print(f"{grn}[ {file} ]{rst}")
+
+    if not files:
+        input(f"{red}[ No file(s) was selected ]{rst}\n\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to return ... ]{rst}")
+        clear_console()
+        main()
+    else:
+        input(f"\n\n{rst}{ylw}{cyn}[ Press {ylw}ENTER{cyn} to start the extraction process ... ]{rst}")
+        extraction_core(files)
+
+def extraction_core(file_paths):
+    clear_console()
+    print(f"{ylw}{cyn}[ Extracting ... ]{rst}")
+
+    for file in file_paths:
+        file_path = Path(file)
+
+        folder_path = file_path.with_suffix("")
+        (folder_path).mkdir(parents=True, exist_ok=True)
+
+        with zipfile.ZipFile(file, 'r') as zipFile:
+            items_inside = zipFile.infolist()
+            print(f"\n[ Extracting: {prp}{file_path.stem}{rst} to {prp}{folder_path}{rst} ]")
+
+            for item_inside in tqdm(items_inside, desc=f"[ Progress  "):
+                zipFile.extract(item_inside, path=folder_path)
+    
+    print(f"\n\n{grn}[ Extracted {len(file_paths)} file(s) ]{rst}")
+    input(f"{grn}\n--------------------------------\n[ Task completed successfully! ]\n--------------------------------{rst}\n\n{ylw}{cyn}[ Press {ylw}ENTER{cyn} to return ... ]{rst}")
+    
+    main()
 
 
 
